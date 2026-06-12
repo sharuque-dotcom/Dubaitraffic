@@ -4,8 +4,9 @@ A self-contained web app that demonstrates the core of solving Dubai's congestio
 **AI-adaptive traffic signals measurably outperform conventional fixed-time signals — on
 identical traffic, live, in your browser.**
 
-**Deploy:** pure static site — import the repo at [vercel.com/new](https://vercel.com/new)
-(framework preset "Other", no build command, root output) or serve the folder anywhere.
+**Live demo:** https://dubai-traffic-intelligence.vercel.app
+
+(Pure static site — redeploy anywhere with `npx vercel deploy --prod`, or just serve the folder.)
 
 ![Dubai Traffic Intelligence Center](https://img.shields.io/badge/zero%20dependencies-vanilla%20JS-d4af37)
 
