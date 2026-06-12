@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dubai Traffic Intelligence Center</title>
+  <meta name="description" content="Live simulation: AI-adaptive traffic signals vs fixed-time control on a Dubai road grid, plus a 24-hour corridor congestion view." />
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🚦&lt;/text&gt;&lt;/svg&gt;" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="eyebrow">Smart City Demonstration &middot; Roads &amp; Transport</div>
+    <h1>Dubai Traffic <span class="gold">Intelligence</span> Center</h1>
+    <div class="arabic" dir="rtl">مركز ذكاء المرور — دبي</div>
+    <p class="tagline">
+      One city grid. Identical traffic. Two ways to run the signals —
+      and a live measurement of what AI-adaptive control is worth.
+    </p>
+  </header>
+
+  <main>
+    <!-- ============ Headline + KPI strip ============ -->
+    <section class="headline-strip">
+      <div class="headline-counter">
+        <div id="improvement" class="big-number">—</div>
+        <div class="big-label">average delay reduced by AI control <span class="live-dot" title="measured live from the simulation below"></span></div>
+      </div>
+      <div class="kpi-cards">
+        <div class="kpi-card fixed-side">
+          <div class="kpi-value" id="kpi-fixed-delay">—</div>
+          <div class="kpi-label">avg delay / vehicle<br />fixed-time</div>
+        </div>
+        <div class="kpi-card ai-side">
+          <div class="kpi-value" id="kpi-ai-delay">—</div>
+          <div class="kpi-label">avg delay / vehicle<br />AI-adaptive</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" id="kpi-served">—</div>
+          <div class="kpi-label">vehicles served<br />(AI network)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" id="kpi-clock">—</div>
+          <div class="kpi-label">simulation<br />clock</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Controls ============ -->
+    <section class="controls">
+      <div class="control-group" id="scenario-buttons" role="group" aria-label="Scenario">
+        <button class="btn scenario-btn active" data-scenario="morning">Morning Rush</button>
+        <button class="btn scenario-btn" data-scenario="evening">Evening Rush</button>
+        <button class="btn scenario-btn" data-scenario="incident">Incident Surge</button>
+      </div>
+      <div class="control-group">
+        <button class="btn btn-primary" id="btn-run">▶ Start</button>
+        <button class="btn" id="btn-reset">↺ Reset</button>
+      </div>
+      <div class="control-group" id="speed-buttons" role="group" aria-label="Speed">
+        <span class="control-label">speed</span>
+        <button class="btn speed-btn" data-speed="1">1×</button>
+        <button class="btn speed-btn active" data-speed="4">4×</button>
+        <button class="btn speed-btn" data-speed="16">16×</button>
+      </div>
+      <div class="scenario-desc" id="scenario-desc"></div>
+      <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+    </section>
+
+    <!-- ============ Dual simulation ============ -->
+    <section class="dual-sim">
+      <div class="sim-panel fixed-side">
+        <h2><span class="chip chip-fixed">Conventional</span> Fixed-time signals</h2>
+        <p class="sim-sub">Rigid 60-second cycle, half the green to each axis, blind to demand.</p>
+        <canvas id="canvas-fixed" width="560" height="560"></canvas>
+        <div class="mini-kpis">
+          <div><span id="mini-fixed-delay">—</span><label>avg delay</label></div>
+          <div><span id="mini-fixed-queued">—</span><label>waiting now</label></div>
+          <div><span id="mini-fixed-exited">—</span><label>served</label></div>
+        </div>
+      </div>
+      <div class="vs-divider"><span>VS</span><em>identical<br/>traffic</em></div>
+      <div class="sim-panel ai-side">
+        <h2><span class="chip chip-ai">AI-Adaptive</span> Max-pressure control</h2>
+        <p class="sim-sub">Senses every queue each second and serves the highest-pressure movements.</p>
+        <canvas id="canvas-ai" width="560" height="560"></canvas>
+        <div class="mini-kpis">
+          <div><span id="mini-ai-delay">—</span><label>avg delay</label></div>
+          <div><span id="mini-ai-queued">—</span><label>waiting now</label></div>
+          <div><span id="mini-ai-exited">—</span><label>served</label></div>
+        </div>
+      </div>
+    </section>
+    <div class="result-banner" id="result-banner" hidden></div>
+
+    <!-- ============ Charts ============ -->
+    <section class="charts">
+      <div class="chart-panel">
+        <h3>Average delay per vehicle <span class="unit">seconds, cumulative</span></h3>
+        <canvas id="chart-delay" width="640" height="260"></canvas>
+      </div>
+      <div class="chart-panel">
+        <h3>Vehicles waiting in queues <span class="unit">live count</span></h3>
+        <canvas id="chart-queued" width="640" height="260"></canvas>
+      </div>
+    </section>
+
+    <!-- ============ Corridor heatmap ============ -->
+    <section class="heatmap-section">
+      <h2>A day on Dubai's corridors</h2>
+      <p class="sim-sub">
+        Stylized 24-hour congestion profile of the major corridors (illustrative, not live RTA data).
+        Toggle AI optimization to apply the delay reduction measured in the simulation above.
+      </p>
+      <div class="heatmap-controls">
+        <button class="btn" id="hm-play">⏸ Pause</button>
+        <input type="range" id="hm-scrub" min="0" max="24" step="0.1" value="7.5" aria-label="Hour of day" />
+        <div class="hm-clock" id="hm-clock">07:30</div>
+        <label class="ai-toggle">
+          <input type="checkbox" id="hm-ai" />
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          AI optimization <strong id="hm-ai-pct"></strong>
+        </label>
+      </div>
+      <div id="heatmap"></div>
+      <div class="hm-legend">
+        <span class="lg" style="--c:#22c55e">free flow</span>
+        <span class="lg" style="--c:#f59e0b">slow</span>
+        <span class="lg" style="--c:#ef4444">congested</span>
+        <span class="lg" style="--c:#7f1d1d">stand-still</span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>
+      <strong>About the model.</strong> Discrete-time queueing simulation (1&nbsp;s steps) over a 3×3 signalized grid:
+      Poisson arrivals, saturation discharge of 1800&nbsp;veh/h per approach, 12&nbsp;s link travel time, jam capacity of
+      20 vehicles per approach with spillback blocking, and a 3&nbsp;s lost time charged on every phase change to
+      <em>both</em> controllers. The AI side runs max-pressure control (Varaiya, 2013), a provably throughput-optimal
+      adaptive policy, with an 8&nbsp;s minimum and 60&nbsp;s maximum green. Both networks receive byte-identical,
+      seeded demand. Run <code>node test/verify.js</code> in the repository to reproduce every number deterministically.
+    </p>
+    <p class="footer-meta">Dubai Traffic Intelligence Center · concept demonstration · not affiliated with RTA</p>
+  </footer>
+
+  <!-- Order matters: each script feeds the TrafficSim global the next one reads. -->
+  <script src="js/sim/rng.js"></script>
+  <script src="js/sim/model.js"></script>
+  <script src="js/sim/controllers.js"></script>
+  <script src="js/sim/engine.js"></script>
+  <script src="js/ui/render.js"></script>
+  <script src="js/ui/dashboard.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
